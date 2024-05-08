@@ -84,6 +84,7 @@ namespace QuickApp.Controllers
 
             updatedUser.Id = user.Id; //to get around my primary key issue -- should generate in appdbcontext not on model fix
             _context.Update(updatedUser);
+            await _context.SaveChangesAsync();
             return Ok($"User {updatedUser.FirstName } {updatedUser.LastName } details have been updated");
         }
 

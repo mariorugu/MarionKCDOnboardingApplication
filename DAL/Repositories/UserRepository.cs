@@ -36,7 +36,7 @@ namespace DAL.Repositories
 
         public KCDUser GetUser(string id)
         {
-            var user =  _appContext.KcdUsers.Where(x=> x.Id == id);
+            var user =  _appContext.KcdUsers.Where(x=> x.Id == id).AsNoTracking();
             return user.SingleOrDefault();
         }
 
