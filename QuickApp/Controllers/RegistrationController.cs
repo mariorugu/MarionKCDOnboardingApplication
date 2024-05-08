@@ -18,6 +18,7 @@ namespace QuickApp.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IPasswordService _passwordService;
 
+        #region Constructor
         public RegistrationController(IMapper mapper, IUnitOfWork unitOfWork, ApplicationDbContext context,
             IPasswordService passwordService)
         {
@@ -26,10 +27,10 @@ namespace QuickApp.Controllers
             _context = context;
             _passwordService = passwordService;
         }
+        #endregion
 
-        #region Private methods
+        #region Public methods
 
-        // GET: api/values
         [HttpGet("users")]
         public IActionResult GetUsers()
         {
@@ -46,10 +47,55 @@ namespace QuickApp.Controllers
         {
             return await AddUser(user);
         }
+        
+        // api call for a user to update their own information 
+        [HttpPut("user/update")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(403)]
+        public async Task<IActionResult> UpdateUserDetails(string id, [FromBody] KCDUserViewModel model)
+        {
+            if (model == null)
+                return BadRequest($"{nameof(model)} cannot be null");
+            
+            // validating model -- did not have time to abstract validation
+            var validator = new KCDUserViewModelValidator();
+            var validationResult = validator.Validate(model);
+
+            if (validationResult.IsValid == false)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+            
+            var user =  _unitOfWork.Users.GetUser(id);
+            
+            // on front end the email part would be disabled but check to ensure no email change
+            if (user.Email != model.Email)
+            {
+                return BadRequest("Change to email is not accepted");
+            }
+            var isPasswordNew = IsPasswordChanged(user.Password, model.Password);
+            var updatedUser  = _mapper.Map<KCDUser>(model);
+            if (isPasswordNew)
+            {
+                updatedUser.Password = _passwordService.SetPassword(model.Password);
+                // encrypt new password 
+            }
+            
+            await _context.SaveChangesAsync();
+            return Ok($"User {updatedUser.FirstName } {updatedUser.LastName } details have been updated");
+        }
 
         #endregion
 
         #region Private methods
+
+        private bool IsPasswordChanged(string storedPassword, string newPassword)
+        {
+            // decode stored password
+            var oldPassword = _passwordService.GetPassword(storedPassword);
+            return oldPassword != newPassword;
+        }
 
         private void AddError(string error, string key = "")
         {
@@ -60,6 +106,7 @@ namespace QuickApp.Controllers
         {
             if (user == null)
                 return BadRequest($"{nameof(user)} cannot be null");
+            
             // validating model -- did not have time to abstract validation
             var validator = new KCDUserViewModelValidator();
             var validationResult = validator.Validate(user);
@@ -93,24 +140,5 @@ namespace QuickApp.Controllers
         }
 
         #endregion
-
-
-        // POST api/values
-        [HttpPost]
-        public void Post([FromBody] string value)
-        {
-        }
-
-        // PUT api/values/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
-        // DELETE api/values/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
     }
 }

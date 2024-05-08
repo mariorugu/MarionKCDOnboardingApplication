@@ -4,6 +4,6 @@ namespace DAL.Core.Interfaces;
 
 public interface IPasswordService
 {
+    string GetPassword(string password);
     string SetPassword(string password);
-    string EncryptPassword(string password);
 }

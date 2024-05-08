@@ -26,12 +26,14 @@ namespace QuickApp.Controllers
         private readonly IAuthorizationService _authorizationService;
         private readonly ILogger<AccountController> _logger;
       
+        #region Constructor
         public AccountManagerController(IMapper mapper, IUnitOfWork unitOfWork, ApplicationDbContext context)
         {
             _mapper = mapper;
             _unitOfWork = unitOfWork;
             _context = context;
         }
+        #endregion
         
         #region Public Methods
         [HttpGet("users/me")]
