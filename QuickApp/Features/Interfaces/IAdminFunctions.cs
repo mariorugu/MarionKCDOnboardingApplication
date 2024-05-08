@@ -8,4 +8,5 @@ public interface IAdminFunctions
 {
      Task Approval(string id, KCDUserViewModel user, bool approve);
      Task ApprovalForListOfUsers(string id, List<string> userIds, bool approve);
+     Task RemoveUser(string id, string userId);
 }

@@ -201,37 +201,30 @@ namespace QuickApp.Controllers
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(403)]
-        public Task<IActionResult> RemoveUser(string id, string userId)
+        public async Task<IActionResult> RemoveUser(string id, string userId)
         {
-            var employee = GetEmployee(id);
-            if (employee == null)
+            if (id.IsNullOrEmpty())
+                return BadRequest($"{nameof(id)} cannot be null");
+            try
             {
-                AddError("Employee with this ID does not exist", "EmployeeId");
-                return Task.FromResult<IActionResult>(BadRequest(ModelState));
+                await _adminFunctions.RemoveUser(id, userId);
+                return Ok($"User {{userId}} has been removed from the KCD system");
             }
-            // check if user is an administrator and can approve new users
-            if (!employee.IsAdministrator)
+            catch(NullReferenceException ex)
             {
-                AddError("Employee does not have the authorization to perform this task", "EmployeeId");
-                return Task.FromResult<IActionResult>(BadRequest(ModelState));
+                AddError("is null", ex.Message);
+                return BadRequest(ModelState);
             }
-            
-            // perharps check if a user is active before removing 
-            _unitOfWork.Users.RemoveUser(userId);
-            return Task.FromResult<IActionResult>(Ok($"User {userId} has been removed from the KCD system"));
+            catch(Exception ex)
+            {
+                AddError(ex.Message, "Request");
+                return BadRequest(ModelState);
+            }
         }
         
         #endregion
 
         #region PrivateMethods
-        private Employee GetEmployee(string id)
-        {
-            var employee =  _unitOfWork.Employees.GetEmployee(id);
-            if (employee != null) 
-                return employee;
-            AddError("Employee with this ID does not exist", "EmployeeId");
-            return null;
-        }
         private KCDUserViewModel GetUserViewModelHelper(string userId)
         {
             var user =  _unitOfWork.Users.GetUser(userId);
@@ -241,16 +234,7 @@ namespace QuickApp.Controllers
             var userViewModel = _mapper.Map<KCDUserViewModel>(user);
             return userViewModel;
         }
-
-        private async Task<RoleViewModel> GetRoleViewModelHelper(string roleName)
-        {
-            var role = await _accountManager.GetRoleLoadRelatedAsync(roleName);
-            if (role != null)
-                return _mapper.Map<RoleViewModel>(role);
-
-            return null;
-        }
-
+        
         private void AddError(IEnumerable<string> errors, string key = "")
         {
             foreach (var error in errors)
