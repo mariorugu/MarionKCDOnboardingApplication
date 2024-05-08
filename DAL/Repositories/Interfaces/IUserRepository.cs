@@ -12,7 +12,7 @@ public interface IUserRepository
     IEnumerable<KCDUser> GetActiveUsers();
     IList<KCDUser> GetAllUsers();
     KCDUser GetUserNoTracking(string id);
-    void ApproveListOfUsers(List<KCDUser> users);
+    void ApproveListOfUsers(List<KCDUser> users, bool approve);
      void DisableListOfUsers(List<KCDUser> users);
     IEnumerable<KCDUser> GetInctiveUsers();
     void RemoveUser(string id);

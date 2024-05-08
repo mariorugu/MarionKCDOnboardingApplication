@@ -11,11 +11,11 @@ namespace DAL.Repositories
         public UserRepository(ApplicationDbContext context) : base(context)
         { }
         
-        public void ApproveListOfUsers(List<KCDUser> users)
+        public void ApproveListOfUsers(List<KCDUser> users, bool approve)
         {
             foreach (var user in users)
             {
-                user.IsActive = true;
+                user.IsActive = approve;
             }
         }
 

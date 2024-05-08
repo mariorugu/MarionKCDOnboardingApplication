@@ -2,14 +2,12 @@ using System;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using QuickApp.Helpers;
 using QuickApp.ViewModels;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DAL;
 using DAL.Core.Interfaces;
-using DAL.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using QuickApp.Features.Interfaces;
@@ -89,6 +87,36 @@ namespace QuickApp.Controllers
             {
                 await _adminFunctions.Approval(id, user, true);
                 return Ok($"User {user.FirstName } {user.LastName } has been approved/enabled to the KCD system");
+            }
+            catch(NullReferenceException ex)
+            {
+                AddError("is null", ex.Message);
+                return BadRequest(ModelState);
+            }
+            catch(Exception ex)
+            {
+                AddError(ex.Message, "Request");
+                return BadRequest(ModelState);
+            }
+        }
+        
+        // api call to activate/approve a given user that has already been saved admin is the assumed current user that should be an administrator
+        [HttpPut("user/approve")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(403)]
+        public async Task<IActionResult> ApproveUser([FromQuery]string id, [FromQuery]string userId)
+        {
+            // validate Request
+            if (userId.IsNullOrEmpty())
+                return BadRequest($"{nameof(userId)} cannot be null");
+            if (id.IsNullOrEmpty())
+                return BadRequest($"{nameof(id)} cannot be null");
+         
+            try
+            {
+                await _adminFunctions.ApproveUsingUserId(id, userId, true);
+                return Ok($"User has been approved/enabled to the KCD system");
             }
             catch(NullReferenceException ex)
             {

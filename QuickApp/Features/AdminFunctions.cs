@@ -51,10 +51,19 @@ public class AdminFunctions : IAdminFunctions
         }
 
         // approve the new user by setting it to active, check based on some business requirements
-        _unitOfWork.Users.ApproveListOfUsers(users.ToList());
+        _unitOfWork.Users.ApproveListOfUsers(users.ToList(), approve);
         await _context.SaveChangesAsync();
     }
-    
+
+    public async Task ApproveUsingUserId(string id, string userId, bool approve)
+    {
+        var employee = GetEmployee(id);
+        ValidateEmployee(employee);
+        var user = GetUser(userId);
+        user.IsActive = approve;
+        await _context.SaveChangesAsync();
+    }
+
     public async Task RemoveUser(string id, string userId)
     {
         var employee = GetEmployee(id);
@@ -64,6 +73,14 @@ public class AdminFunctions : IAdminFunctions
     }
     
     #region PrivateMethods
+    private KCDUser GetUser(string id)
+    {
+        var user =  _unitOfWork.Users.GetUser(id);
+        if (user != null) 
+            return user;
+        return null;
+    }
+    
     private Employee GetEmployee(string id)
     {
         var employee =  _unitOfWork.Employees.GetEmployee(id);
