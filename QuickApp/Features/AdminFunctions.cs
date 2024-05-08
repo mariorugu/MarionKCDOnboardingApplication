@@ -23,16 +23,7 @@ public class AdminFunctions : IAdminFunctions
     public async Task Approval(string id, KCDUserViewModel user, bool approve)
     {
         var employee = GetEmployee(id);
-        if (employee == null)
-        {
-            throw new NullReferenceException(nameof(Employee));
-        }
-
-        // check if user is an administrator and can approve new users
-        if (!employee.IsAdministrator)
-        {
-            throw new Exception("Employee does not have the authorization to perform this task");
-        }
+        ValidateEmployee(employee);
 
         // account to approve - should get userId instead correct later
         var userToApprove = _unitOfWork.Users.GetUserByEmail(user.Email);
@@ -49,16 +40,7 @@ public class AdminFunctions : IAdminFunctions
     public async Task ApprovalForListOfUsers(string id, List<string> userIds, bool approve)
     {
         var employee = GetEmployee(id);
-        if (employee == null)
-        {
-            throw new NullReferenceException(nameof(Employee));
-        }
-
-        // check if user is an administrator and can approve new users
-        if (!employee.IsAdministrator)
-        {
-            throw new Exception("Employee does not have the authorization to perform this task");
-        }
+        ValidateEmployee(employee);
 
         // account to approve - should get userId instead correct later
         // accounts to approve
@@ -73,6 +55,14 @@ public class AdminFunctions : IAdminFunctions
         await _context.SaveChangesAsync();
     }
     
+    public async Task RemoveUser(string id, string userId)
+    {
+        var employee = GetEmployee(id);
+        ValidateEmployee(employee);
+        // perharps check if a user is active before removing 
+        _unitOfWork.Users.RemoveUser(userId);
+    }
+    
     #region PrivateMethods
     private Employee GetEmployee(string id)
     {
@@ -80,6 +70,20 @@ public class AdminFunctions : IAdminFunctions
         if (employee != null) 
             return employee;
         return null;
+    }
+    
+    private void ValidateEmployee(Employee employee)
+    {
+        if (employee == null)
+        {
+            throw new NullReferenceException(nameof(Employee));
+        }
+
+        // check if user is an administrator and can approve new users
+        if (!employee.IsAdministrator)
+        {
+            throw new Exception("Employee does not have the authorization to perform this task");
+        }
     }
     #endregion
 }

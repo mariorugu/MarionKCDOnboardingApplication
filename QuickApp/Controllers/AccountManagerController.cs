@@ -217,8 +217,8 @@ namespace QuickApp.Controllers
             }
             
             // perharps check if a user is active before removing 
-            _unitOfWork.Users.RemoveUser(id);
-            return Task.FromResult<IActionResult>(Ok($"User {id} has been removed from the KCD system"));
+            _unitOfWork.Users.RemoveUser(userId);
+            return Task.FromResult<IActionResult>(Ok($"User {userId} has been removed from the KCD system"));
         }
         
         #endregion
