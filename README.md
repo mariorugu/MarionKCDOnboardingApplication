@@ -40,6 +40,7 @@ Hopefully will find time to remove all the things i dont need tomorrow and maybe
 >   * No authentication on any of the api calls
 >   * Swagger
 >   * Maybe add a Task to routinely remove inactive users after given amount of time
+>   * Refactoring controller by using interfaces
 
 ## How it works/ how to run
 >   * Database (localdb)\MSSQLLocalDB

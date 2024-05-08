@@ -22,6 +22,8 @@ using QuickApp.OIDC;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
+using QuickApp.Features;
+using QuickApp.Features.Interfaces;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using AppPermissions = DAL.Core.ApplicationPermissions;
 
@@ -182,7 +184,9 @@ namespace QuickApp
             builder.Services.AddScoped<IUnitOfWork, HttpUnitOfWork>();
             builder.Services.AddScoped<IAccountManager, AccountManager>();
             builder.Services.AddScoped<IPasswordService, PasswordService>();
-
+            
+            // Features
+            builder.Services.AddScoped<IAdminFunctions, AdminFunctions>();
 
             // Auth Handlers
             builder.Services.AddSingleton<IAuthorizationHandler, ViewUserAuthorizationHandler>();

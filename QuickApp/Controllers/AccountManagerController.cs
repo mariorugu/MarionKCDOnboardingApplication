@@ -1,3 +1,4 @@
+using System;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,6 +12,7 @@ using DAL.Core.Interfaces;
 using DAL.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using QuickApp.Features.Interfaces;
 
 namespace QuickApp.Controllers
 {
@@ -19,6 +21,7 @@ namespace QuickApp.Controllers
     public class AccountManagerController : ControllerBase
     {
         private readonly IMapper _mapper;
+        private readonly IAdminFunctions _adminFunctions;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IAccountManager _accountManager;
         private readonly ApplicationDbContext _context;
@@ -26,11 +29,12 @@ namespace QuickApp.Controllers
         private readonly ILogger<AccountController> _logger;
       
         #region Constructor
-        public AccountManagerController(IMapper mapper, IUnitOfWork unitOfWork, ApplicationDbContext context)
+        public AccountManagerController(IMapper mapper, IUnitOfWork unitOfWork, ApplicationDbContext context, IAdminFunctions adminFunctions)
         {
             _mapper = mapper;
             _unitOfWork = unitOfWork;
             _context = context;
+            _adminFunctions = adminFunctions;
         }
         #endregion
         
@@ -80,32 +84,22 @@ namespace QuickApp.Controllers
             {
                 return BadRequest(validationResult.Errors);
             }
-            
-            
-            var employee = GetEmployee(id);
-            if (employee == null)
-            {
-                AddError("Employee with this ID does not exist", "EmployeeId");
-                return BadRequest(ModelState);
-            }
-            // check if user is an administrator and can approve new users
-            if (!employee.IsAdministrator)
-            {
-                AddError("Employee does not have the authorization to perform this task", "EmployeeId");
-                return BadRequest(ModelState);
-            }
-            // account to approve - should get userId instead correct later
-            var userToApprove =  _unitOfWork.Users.GetUserByEmail(user.Email);
-            if (userToApprove == null)
-            {
-                AddError("User with this ID does not exist", "EmployeeId");
-                return BadRequest(ModelState);
-            }
 
-            // approve the new user by setting it to active, check based on some business requirements
-            userToApprove.IsActive = true;
-            await _context.SaveChangesAsync();
-            return Ok($"User {userToApprove.FirstName } {userToApprove.LastName } has been approved/enabled to the KCD system");
+            try
+            {
+                await _adminFunctions.Approval(id, user, true);
+                return Ok($"User {user.FirstName } {user.LastName } has been approved/enabled to the KCD system");
+            }
+            catch(NullReferenceException ex)
+            {
+                AddError("is null", ex.Message);
+                return BadRequest(ModelState);
+            }
+            catch(Exception ex)
+            {
+                AddError(ex.Message, "Request");
+                return BadRequest(ModelState);
+            }
         }
         
         // api call to deactivate a given user 
@@ -190,7 +184,7 @@ namespace QuickApp.Controllers
             var employee = GetEmployee(id);
             if (employee == null)
             {
-                AddError("Employee with this ID does not exist", "EmployeeId");
+                AddError($"Employee with this ID {id} does not exist", "EmployeeId");
                 return BadRequest(ModelState);
             }
             // check if user is an administrator and can approve new users
@@ -241,7 +235,6 @@ namespace QuickApp.Controllers
         #endregion
 
         #region PrivateMethods
-
         private Employee GetEmployee(string id)
         {
             var employee =  _unitOfWork.Employees.GetEmployee(id);
