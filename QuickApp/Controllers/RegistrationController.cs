@@ -73,9 +73,10 @@ namespace QuickApp.Controllers
             var isNewUser = _unitOfWork.Users.IsNewUser(user.Email);
             if (isNewUser == false)
             {
-                userModel = _mapper.Map<KCDUser>(user);
                 // encrypt password 
-                var password = _passwordService.SetPassword(userModel.Password);
+                var password = _passwordService.SetPassword(user.Password);
+                userModel = _mapper.Map<KCDUser>(user);
+                
                 userModel.Password = password;
                 // store in database
                 _context.KcdUsers.Add(userModel);
@@ -88,7 +89,7 @@ namespace QuickApp.Controllers
                 return BadRequest(ModelState);
             }
 
-            return Ok($"User {userModel.Id}, {userModel.FirstName } {userModel.LastName }has been saved pending approval from administration");
+            return Ok($"User {userModel.FirstName } {userModel.LastName} has been saved pending approval from administration");
         }
 
         #endregion

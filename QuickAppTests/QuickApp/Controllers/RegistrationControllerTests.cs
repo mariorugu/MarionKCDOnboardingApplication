@@ -3,6 +3,7 @@ using DAL;
 using DAL.Core.Interfaces;
 using DAL.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 using QuickApp.Controllers;
 using QuickApp.ViewModels;
@@ -24,15 +25,6 @@ public class RegistrationControllerTests
     private List<KCDUserViewModel> userViewModels;
 
     private RegistrationController _registrationController;
-    
-    public RegistrationControllerTests()
-    {
-    }
-
-    public RegistrationControllerTests(ApplicationDbContext context)
-    {
-        _context = context;
-    }
 
     [SetUp]
     public void Setup()
@@ -61,7 +53,7 @@ public class RegistrationControllerTests
             LastName = "Llyod",
             Email = "mariorugu@lalandi.com",
             PhoneNumber = "06051465869",
-            Password = "cGFzc3dvcmQxMjM0",
+            Password = password,
             Country = "Netherlands",
             Company = "Lalandi",
         };
@@ -74,7 +66,7 @@ public class RegistrationControllerTests
 
         _passwordServiceMock.Setup(p => p.SetPassword(password)).Returns(encryptedPassword);
         _unitOfWorkMock.Setup(p => p.Users.GetAllUsers()).Returns(users);
-        _unitOfWorkMock.Setup(p => p.Users.IsNewUser(userViewModel.Email)).Returns(true);
+        _unitOfWorkMock.Setup(p => p.Users.IsNewUser(userViewModel.Email)).Returns(false);
 
         _mapperMock.Setup(m => m.Map<KCDUserViewModel>(user)).Returns(() => userViewModel);
 
@@ -157,6 +149,7 @@ public class RegistrationControllerTests
         // Act
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _unitOfWorkMock.Setup(p => p.Users.IsNewUser(userViewModel.Email)).Returns(true);
+        
         _registrationController = new RegistrationController(_mapperMock.Object, _unitOfWorkMock.Object, _context,
             _passwordServiceMock.Object);
         var result = await _registrationController.RegisterUser(userViewModel) as BadRequestObjectResult;
@@ -169,15 +162,25 @@ public class RegistrationControllerTests
     public async Task RegisterUserSuccessfully()
     {
         // Act
+        DbContextOptions<ApplicationDbContext> options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .EnableSensitiveDataLogging()                
+            .Options;
+        _context = new ApplicationDbContext(options);
+        
         _mapperMock = new Mock<IMapper>();
         _mapperMock.Setup(m => m.Map<KCDUser>(userViewModel)).Returns(() => user);
+        _passwordServiceMock.Setup(p => p.SetPassword(password)).Returns(encryptedPassword);
+
         _registrationController = new RegistrationController(_mapperMock.Object, _unitOfWorkMock.Object, _context,
             _passwordServiceMock.Object);
         
-        // need to figure out how to mock database
-        //var result = await _registrationController.RegisterUser(userViewModel) as OkObjectResult;
-
+        var result = await _registrationController.RegisterUser(userViewModel) as OkObjectResult;
+        
         // Assert
-        Assert.Pass();
+        Assert.That(result.StatusCode, Is.EqualTo(200));
+        Assert.That(result.Value, Is.EqualTo($"User {user.FirstName } {user.LastName} has been saved pending approval from administration"));
+        // Mock.Get(_context).Verify(x => x.Add(It.IsAny<KCDUser>()), Times.Once); -- if mocked to test that the user was stored
+        //Mock.Get(_context).Verify(x => x.SaveChangesAsync(), Times.Once); -- if mocked to test that the user was saved to database
     }
 }
