@@ -81,8 +81,9 @@ namespace QuickApp.Controllers
                 updatedUser.Password = _passwordService.SetPassword(model.Password);
                 // encrypt new password 
             }
-            
-            await _context.SaveChangesAsync();
+
+            updatedUser.Id = user.Id; //to get around my primary key issue -- should generate in appdbcontext not on model fix
+            _context.Update(updatedUser);
             return Ok($"User {updatedUser.FirstName } {updatedUser.LastName } details have been updated");
         }
 
