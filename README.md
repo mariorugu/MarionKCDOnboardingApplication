@@ -33,8 +33,7 @@ Hopefully will find time to remove all the things i dont need tomorrow and maybe
 
 ## What is not done yet
 
->   * More unit tests - figure out how to mock the database for tests
->   * More api calls to update a user - for example changing user details like name etc
+>   * More unit tests (have done for one controller)
 >   * A simple frontend
 >   * No authentication on any of the api calls
 >   * Swagger
