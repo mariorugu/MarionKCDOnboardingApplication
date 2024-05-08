@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DAL;
 using DAL.Models;
@@ -41,6 +43,33 @@ public class AdminFunctions : IAdminFunctions
 
         // approve the new user by setting it to active, check based on some business requirements
         userToApprove.IsActive = approve;
+        await _context.SaveChangesAsync();
+    }
+    
+    public async Task ApprovalForListOfUsers(string id, List<string> userIds, bool approve)
+    {
+        var employee = GetEmployee(id);
+        if (employee == null)
+        {
+            throw new NullReferenceException(nameof(Employee));
+        }
+
+        // check if user is an administrator and can approve new users
+        if (!employee.IsAdministrator)
+        {
+            throw new Exception("Employee does not have the authorization to perform this task");
+        }
+
+        // account to approve - should get userId instead correct later
+        // accounts to approve
+        var users =  _unitOfWork.Users.GetUsers(userIds);
+        if (users.Any() == false)
+        {
+            throw new NullReferenceException(nameof(KCDUser));
+        }
+
+        // approve the new user by setting it to active, check based on some business requirements
+        _unitOfWork.Users.ApproveListOfUsers(users.ToList());
         await _context.SaveChangesAsync();
     }
     

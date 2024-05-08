@@ -109,31 +109,34 @@ namespace QuickApp.Controllers
         [ProducesResponseType(403)]
         public async Task<IActionResult> DeactivateUser(string id, [FromBody] KCDUserViewModel user)
         {
-            // checking for authorizing employee
-            var employee = GetEmployee(id);
-            if (employee == null)
+            // validate Request
+            if (user == null)
+                return BadRequest($"{nameof(user)} cannot be null");
+            if (id.IsNullOrEmpty())
+                return BadRequest($"{nameof(id)} cannot be null");
+            var validator = new KCDUserViewModelValidator();
+            var validationResult = validator.Validate(user);
+
+            if (validationResult.IsValid == false)
             {
-                AddError("Employee with this ID does not exist", "EmployeeId");
-                return BadRequest(ModelState);
-            }
-            // check if user is an administrator and can approve new users
-            if (!employee.IsAdministrator)
-            {
-                AddError("Employee does not have the authorization to perform this task", "EmployeeId");
-                return BadRequest(ModelState);
-            }
-            // account to deactivate
-            var userToApprove =  _unitOfWork.Users.GetUserByEmail(user.Email);
-            if (userToApprove == null)
-            {
-                AddError("User with this ID does not exist", "EmployeeId");
-                return BadRequest(ModelState);
+                return BadRequest(validationResult.Errors);
             }
 
-            // approve the new user by setting it to active, check based on some business requirements
-            userToApprove.IsActive = false;
-            await _context.SaveChangesAsync();
-            return Ok($"User {userToApprove.FirstName} has been disabled/disabled to the KCD system");
+            try
+            {
+                await _adminFunctions.Approval(id, user, false);
+                return Ok($"User {user.FirstName } {user.LastName } has been disabled from the KCD system");
+            }
+            catch(NullReferenceException ex)
+            {
+                AddError("is null", ex.Message);
+                return BadRequest(ModelState);
+            }
+            catch(Exception ex)
+            {
+                AddError(ex.Message, "Request");
+                return BadRequest(ModelState);
+            }
         }
         
         // api call to approve a list of new users
@@ -143,31 +146,26 @@ namespace QuickApp.Controllers
         [ProducesResponseType(403)]
         public async Task<IActionResult> ApproveListOfUsers(string id, List<string> userIds)
         {
-            // checking for authorizing employee
-            var employee = GetEmployee(id);
-            if (employee == null)
+            if (userIds.Any() == false)
             {
-                AddError("Employee with this ID does not exist", "EmployeeId");
+                return BadRequest("User Ids missing");
+            }
+            
+            try
+            {
+                await _adminFunctions.ApprovalForListOfUsers(id, userIds, true);
+                return Ok($"Users have been approved/enabled to the KCD system");
+            }
+            catch(NullReferenceException ex)
+            {
+                AddError("is null", ex.Message);
                 return BadRequest(ModelState);
             }
-            // check if user is an administrator and can approve new users
-            if (!employee.IsAdministrator)
+            catch(Exception ex)
             {
-                AddError("Employee does not have the authorization to perform this task", "EmployeeId");
+                AddError(ex.Message, "Request");
                 return BadRequest(ModelState);
             }
-            // accounts to approve
-            var users =  _unitOfWork.Users.GetUsers(userIds);
-            if (users.Any() == false)
-            {
-                AddError("Users with these IDs do not exist", "EmployeeId");
-                return BadRequest(ModelState);
-            }
-
-            // approve the new user by setting it to active, check based on some business requirements
-            _unitOfWork.Users.ApproveListOfUsers(users.ToList());
-            await _context.SaveChangesAsync();
-            return Ok($"Users have been approved/enabled to the KCD system");
         }
         
         // api call to deactivate a list of new users
@@ -181,30 +179,21 @@ namespace QuickApp.Controllers
             {
                 return BadRequest("User Ids missing");
             }
-            var employee = GetEmployee(id);
-            if (employee == null)
+            try
             {
-                AddError($"Employee with this ID {id} does not exist", "EmployeeId");
+                await _adminFunctions.ApprovalForListOfUsers(id, userIds, false);
+                return Ok($"Users have been disabled to the KCD system");
+            }
+            catch(NullReferenceException ex)
+            {
+                AddError("is null", ex.Message);
                 return BadRequest(ModelState);
             }
-            // check if user is an administrator and can approve new users
-            if (!employee.IsAdministrator)
+            catch(Exception ex)
             {
-                AddError("Employee does not have the authorization to perform this task", "EmployeeId");
+                AddError(ex.Message, "Request");
                 return BadRequest(ModelState);
             }
-            // accounts to approve
-            var users =  _unitOfWork.Users.GetUsers(userIds);
-            if (users.Any() == false)
-            {
-                AddError("Users with these IDs do not exist", "EmployeeId");
-                return BadRequest(ModelState);
-            }
-
-            // approve the new user by setting it to active, check based on some business requirements
-            _unitOfWork.Users.DisableListOfUsers(users.ToList());
-            await _context.SaveChangesAsync();
-            return Ok($"Users have been disabled from the KCD system");
         }
         
         // api call to remove user
