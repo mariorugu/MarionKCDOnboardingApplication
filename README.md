@@ -43,4 +43,25 @@ Hopefully will find time to remove all the things i dont need tomorrow and maybe
 ## How it works/ how to run
 >   * Database (localdb)\MSSQLLocalDB
 >   * Run QuickApp exe
+>   * Api calls done on postman no authentication required for now
+
+
+## Calls on postman
+>   * To register a user - https://localhost:44450/api/Registration/user body example 
+>   * {
+      "password":"password1234",
+      "firstName":"name",
+      "middleName":"middle",
+      "lastName":"lastname",
+      "email":"email@gmail.com",
+      "phoneNumber":"TestSCIM00542",
+      "country":"Uk",
+      "company":"Lalandi",
+      "miscellaneous":"Internet"
+      }
+> 
+> 
+>   * Get All users https://localhost:44450/api/Registration/users
+>   * Update a user https://localhost:44450/api/Registration/user/update?id={id} body as above
+>   * 
 
