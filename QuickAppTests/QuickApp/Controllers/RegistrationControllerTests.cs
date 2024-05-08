@@ -156,7 +156,7 @@ public class RegistrationControllerTests
     {
         // Act
         _unitOfWorkMock = new Mock<IUnitOfWork>();
-        _unitOfWorkMock.Setup(p => p.Users.IsNewUser(userViewModel.Email)).Returns(false);
+        _unitOfWorkMock.Setup(p => p.Users.IsNewUser(userViewModel.Email)).Returns(true);
         _registrationController = new RegistrationController(_mapperMock.Object, _unitOfWorkMock.Object, _context,
             _passwordServiceMock.Object);
         var result = await _registrationController.RegisterUser(userViewModel) as BadRequestObjectResult;

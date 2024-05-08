@@ -71,7 +71,7 @@ namespace QuickApp.Controllers
 
             KCDUser userModel;
             var isNewUser = _unitOfWork.Users.IsNewUser(user.Email);
-            if (isNewUser)
+            if (isNewUser == false)
             {
                 userModel = _mapper.Map<KCDUser>(user);
                 // encrypt password 
