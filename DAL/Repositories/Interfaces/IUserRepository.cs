@@ -11,7 +11,7 @@ public interface IUserRepository
     IEnumerable<KCDUser> GetUsers(IEnumerable<string> ids);
     IEnumerable<KCDUser> GetActiveUsers();
     IList<KCDUser> GetAllUsers();
-
+    KCDUser GetUserNoTracking(string id);
     void ApproveListOfUsers(List<KCDUser> users);
      void DisableListOfUsers(List<KCDUser> users);
     IEnumerable<KCDUser> GetInctiveUsers();

@@ -67,7 +67,7 @@ namespace QuickApp.Controllers
                 return BadRequest(validationResult.Errors);
             }
             
-            var user =  _unitOfWork.Users.GetUser(id);
+            var user =  _unitOfWork.Users.GetUserNoTracking(id);
             
             // on front end the email part would be disabled but check to ensure no email change
             if (user.Email != model.Email)

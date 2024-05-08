@@ -61,6 +61,10 @@ Hopefully will find time to remove all the things i dont need tomorrow and maybe
 > 
 > 
 >   * Get All users https://localhost:44450/api/Registration/users
->   * Update a user https://localhost:44450/api/Registration/user/update?id={id} body as above
->   * 
+>   * Update a user https://localhost:44450/api/Registration/user/update?id={userid} body as above
+> * Admin api
+> * for testing get employees from seeded database https://localhost:44450/api/AccountManager/user/
+> * admin will approve user with https://localhost:44450/api/AccountManager/user/approve?id={employeeId}
+> * admin to approve a list of users https://localhost:44450/api/AccountManager/users/approve?id={employeeId}
+> * admin to deactivate a list of users  https://localhost:44450/api/AccountManager/users/deactivate?id={employeeId}
 

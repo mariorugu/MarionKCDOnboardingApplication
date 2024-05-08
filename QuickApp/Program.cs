@@ -181,7 +181,6 @@ namespace QuickApp
             // Repositories
             builder.Services.AddScoped<IUnitOfWork, HttpUnitOfWork>();
             builder.Services.AddScoped<IAccountManager, AccountManager>();
-            builder.Services.AddScoped<IAccountManager2, AccountManager2>();
             builder.Services.AddScoped<IPasswordService, PasswordService>();
 
 

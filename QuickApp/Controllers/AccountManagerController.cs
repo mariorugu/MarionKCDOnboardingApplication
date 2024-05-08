@@ -21,7 +21,6 @@ namespace QuickApp.Controllers
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IAccountManager _accountManager;
-        private readonly IAccountManager2 _accountManager2;
         private readonly ApplicationDbContext _context;
         private readonly IAuthorizationService _authorizationService;
         private readonly ILogger<AccountController> _logger;
@@ -36,20 +35,13 @@ namespace QuickApp.Controllers
         #endregion
         
         #region Public Methods
-        [HttpGet("users/me")]
-        [ProducesResponseType(200, Type = typeof(UserViewModel))]
-        public async Task<IActionResult> GetCurrentUser()
-        {
-            return await GetUserById(Utilities.GetUserId(User));
-        }
-
         [HttpGet("users/{id}")]
         [ProducesResponseType(200, Type = typeof(KCDUserViewModel))]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> GetUserById(string id)
+        public IActionResult GetUserById(string id)
         {
-            var user = await GetUserViewModelHelper(id);
+            var user =  GetUserViewModelHelper(id);
 
             if (user != null)
                 return Ok(user);
@@ -189,7 +181,7 @@ namespace QuickApp.Controllers
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(403)]
-        public async Task<IActionResult> DeactivateListOfUser([FromQuery]string id,   [FromBody] List<string> userIds)
+        public async Task<IActionResult> DeactivateListOfUsers([FromQuery]string id,   [FromBody] List<string> userIds)
         {
             if (userIds.Any() == false)
             {
@@ -240,9 +232,10 @@ namespace QuickApp.Controllers
                 AddError("Employee does not have the authorization to perform this task", "EmployeeId");
                 return Task.FromResult<IActionResult>(BadRequest(ModelState));
             }
-
+            
+            // perharps check if a user is active before removing 
             _unitOfWork.Users.RemoveUser(id);
-            return Task.FromResult<IActionResult>(Ok($"User {id} have been removed from the KCD system"));
+            return Task.FromResult<IActionResult>(Ok($"User {id} has been removed from the KCD system"));
         }
         
         #endregion
@@ -257,9 +250,9 @@ namespace QuickApp.Controllers
             AddError("Employee with this ID does not exist", "EmployeeId");
             return null;
         }
-        private async Task<KCDUserViewModel> GetUserViewModelHelper(string userId)
+        private KCDUserViewModel GetUserViewModelHelper(string userId)
         {
-            var user = await _accountManager2.GetUsersAsync(userId);
+            var user =  _unitOfWork.Users.GetUser(userId);
             if (user == null)
                 return null;
 
