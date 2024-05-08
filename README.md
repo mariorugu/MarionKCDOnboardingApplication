@@ -17,7 +17,7 @@ Wrote multiple API calls to update a user, approve a user, approve/disable a lis
 Used a template (https://github.com/emonney/QuickApp.git) as framework but decided to create my own models, repositories and write my own controllers
 Hopefully will find time to remove all the things i dont need tomorrow and maybe get a simple frontend working.
 
-## Documentation
+## Documentation for my addition to template
 > * **Models**
 >   * User
 >   * Employee
@@ -30,6 +30,8 @@ Hopefully will find time to remove all the things i dont need tomorrow and maybe
 >   * RegistrationController
 > * **Tests**
   >   * RegistrationControllerTests
+> * **Helper Functions**
+  >   * PasswordService
 
 ## What is not done yet
 
