@@ -35,7 +35,7 @@ Hopefully will find time to remove all the things i dont need tomorrow and maybe
 
 >   * More unit tests - figure out how to mock the database for tests
 >   * More api calls to update a user - for example changing user details like name etc
->   * A simple front
+>   * A simple frontend
 >   * No authentication on any of the api calls
 >   * Swagger
 >   * Maybe add a Task to routinely remove inactive users after given amount of time
